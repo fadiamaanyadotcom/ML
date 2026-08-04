@@ -1,0 +1,85 @@
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import confusion_matrix
+
+# STEPS TO FOLLOW MAINLY
+# FIND RELATIONS BETWEEN THE COLS OR THE FUNCTIONS
+# HANDLE NULL VALUES
+# HANDLE CATEGORICAL FEATURES
+
+
+train = pd.read_csv('titanic_train.csv')
+print(train.head())
+
+sns.heatmap(train.isnull(), yticklabels=False, cbar=False, cmap='viridis') # cbar is basically the legend that which colour is representing what value   cmap is the colour
+plt.show()
+
+sns.set_style('whitegrid')
+# sns.countplot(x = 'Survived' , data = df)  # survived either yes or not so yes == 1 -->no == 0
+sns.countplot(x = ' Survived' , hue = 'Sex' , data = train)
+sns.countplot(x = ' Survived' , hue = 'Pclass' , data = train) # so we are finding the relations and explore more info
+
+train['Age'].hist(bins = 10,color = 'darkred' , alpha = 0.3) # bins group the numerical values i.e 10-10 na gap ma hase numberline
+                                                        # alpha is transparency --> 1 is opaque and 0 is completely transparent
+
+sns.countplot(x = 'SibSp' , data = train)
+train['Fare'].hist(colour = 'green',bins = 40, figsize = (8,4))
+
+sns.boxplot(x = 'Pclass' , y = 'Age' , data =train , palette = 'winter') # through boxplot we get to know the average age of each pasenger class and then we replace it with the null values
+
+def input_age(cols):
+    Age = cols[0]
+    Pclass = cols[1]
+    if pd.isnull(Pclass):
+        if Pclass == 1:
+            return 37
+        elif Pclass == 2:
+            return 29
+        else:
+            return 24
+    else:
+        return Age
+train['Age'] = train[['Age', 'Pclass']].apply(input_age, axis= 1) # axis = 1 means row by row and axis = 0 means column by column so we want row by row as at an instance we need value of age and Pclass together
+
+# SEX,EMBARKED ARE CATEGORICAL DATA
+
+embarked = pd.get_dummies(train['Embarked'],drop_first = True) # get_ dummies will create sepertae cols for each unique value in the embedded col --> have ae seperate cols j che aema either 0 or 1 values aavse and we will drop the first col as agar badha unique value vala cols ma 0 to j drop karyu aema j 1 hase so it reduces/eliminates redundancy
+sex = pd.get_dummies(train['Sex'],drop_first = True)
+
+train.drop['Sex' , 'Embarked' , 'Name' , 'Ticket']
+
+train = pd.concat([train,sex,embarked] , axis  = 1)
+train.drop(['Survived'] , axis = 1)  # for drop axis = 1 is col and for apply axis = 1 is row
+
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(train.drop('Survived', axis=1), train['Survived'], test_size=0.30, random_state=101) # capital x means 2D and lower y means 1D 
+                                                                                                                                         # train --> all the data
+                                                                                                                                         # test is only 30 percent data as test_size is 0.30
+                                                                                                                                         # random state ma any no. we can write thuus here it shuffles data random;y 101 times
+                                                                                                                                         # x axis ma train nu dta but without survived col and that too only 30 percent of the data/rows
+                                                                                                                                         # y axiz ma train nu survived
+
+logmodel = LogisticRegression()
+logmodel.fit(X_train,y_train)
+LogisticRegression(C=1.0, class_weight=None, dual=False, fit_intercept=True, intercept_scaling=1, max_iter=100, multi_class='ovr', n_jobs=1, penalty='l2', random_state=None, solver='liblinear', tol=0.0001, verbose=0, warm_start=False) # so penalty prevents the model from getting too complex
+                                                                                                                                                                                                                                           # penalty when l2 then the less important cols are shrinked to 0 
+                                                                                                                                                                                                                                           # when penalty is l1 then the cols are just dropped
+                                                                                                                                                                                                                                           # C is like how strictly penalty is applied
+                                                                                                                                                                                                                                           # C = 0.01 --> very strict aetle simple model and 100 matlab complex traing data heavy
+                                                                                                                                                                                                                                           # solver is the engine --> liblinear for small data and binary classification
+                                                                                                                                                                                                                                           # liblinear  works for l1 and l2 both
+                                                                                                                                                                                                                                           # lbfgs --> for l2 penalty and midsize data
+                                                                                                                                                                                                                                           # saga for all penalties("") and large data sets
+                                                                                                                                                                                                                                           # max_iter ketla chances or iterations can be given so here the solver will stop after 100 attempts even if the answer is not found
+                                                                                                                                                                                                                                           # tol is tolerance 
+                                                                                                                                                                                                                                           # fit_intercept = tells the model to calculate the y interv=cept if the data (where the function line cuts the y axis)
+                                                                                                                                                                                                                                           # intercept_scaling = 1 --> artificially expand data to fit the intercept 
+                                                                                                                                                                                                                                           # multi_class = 'ovr' --> one vs rest so 3 categories hoy Apple, Banana, Grapes then is Apple is not Apple is Banana isnot...
+                                                                                                                                                                                                                                           # class_weight = 
+                                                                                                                                                                                                                                           
+                                                                                                                                                                                                                                                                                
